@@ -405,8 +405,8 @@ public class ProtectionStones extends JavaPlugin {
 
     /**
      * Check if an item is a valid protection block, and if checkNBT is true, check if it was created by
-     * ProtectionStones. Be aware that blocks may have restrict-obtaining off, meaning that it is ignored whether or not
-     * the item is created by ProtectionStones (in this case have checkNBT false).
+     * ProtectionStones using persistent data container. Be aware that blocks may have restrict-obtaining off, 
+     * meaning that it is ignored whether or not the item is created by ProtectionStones (in this case have checkNBT false).
      *
      * @param item     the item to check
      * @param checkNBT whether or not to check if the plugin signed off on the item (restrict-obtaining)
@@ -437,12 +437,12 @@ public class ProtectionStones extends JavaPlugin {
             }
         }
 
-        return tag; // whether or not the nbt tag was found
+        return tag; // whether or not the persistent data was found
     }
 
     /**
      * Check if an item is a valid protection block, and if the block type has restrict-obtaining on, check if it was
-     * created by ProtectionStones (custom NBT tag). Be aware that blocks may have restrict-obtaining
+     * created by ProtectionStones (using persistent data container). Be aware that blocks may have restrict-obtaining
      * off, meaning that it ignores whether or not the item is created by ProtectionStones.
      *
      * @param item     the item to check
