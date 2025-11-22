@@ -18,7 +18,7 @@ Check the [wiki](https://github.com/espidev/ProtectionStones/wiki) for plugin re
 
 ### Dependencies
 * ProtectionStones 2.10.5
-  * Spigot 1.20.6+
+  * Spigot 1.21.3+ (supports 1.21.8 to 1.21.10)
   * WorldGuard 7.0.9+
   * WorldEdit 7.2.6+
   * Vault (Optional)

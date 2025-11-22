@@ -39,8 +39,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.luckperms.api.LuckPerms;
@@ -419,15 +419,17 @@ public class ProtectionStones extends JavaPlugin {
 
         boolean tag = false;
 
-        // otherwise, check if the item was created by protection stones (stored in custom tag)
+        // otherwise, check if the item was created by protection stones (stored in persistent data)
         if (item.getItemMeta() != null) {
-            CustomItemTagContainer tagContainer = item.getItemMeta().getCustomTagContainer();
+            PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
+            NamespacedKey key = new NamespacedKey(ProtectionStones.getInstance(), "isPSBlock");
+            
             try { // check if tag byte is 1
-                Byte isPSBlock = tagContainer.getCustomTag(new NamespacedKey(ProtectionStones.getInstance(), "isPSBlock"), ItemTagType.BYTE);
+                Byte isPSBlock = dataContainer.get(key, PersistentDataType.BYTE);
                 tag = isPSBlock != null && isPSBlock == 1;
             } catch (IllegalArgumentException es) {
                 try { // some nbt data may be using a string (legacy nbt from ps version 2.0.0 -> 2.0.6)
-                    String isPSBlock = tagContainer.getCustomTag(new NamespacedKey(ProtectionStones.getInstance(), "isPSBlock"), ItemTagType.STRING);
+                    String isPSBlock = dataContainer.get(key, PersistentDataType.STRING);
                     tag = isPSBlock != null && isPSBlock.equals("true");
                 } catch (IllegalArgumentException ignored) {
                 }
@@ -495,7 +497,7 @@ public class ProtectionStones extends JavaPlugin {
         }
 
         // add identifier for protection stone created items
-        im.getCustomTagContainer().setCustomTag(new NamespacedKey(plugin, "isPSBlock"), ItemTagType.BYTE, (byte) 1);
+        im.getPersistentDataContainer().set(new NamespacedKey(plugin, "isPSBlock"), PersistentDataType.BYTE, (byte) 1);
 
         is.setItemMeta(im);
 
