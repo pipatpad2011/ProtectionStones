@@ -425,7 +425,6 @@ public class ProtectionStones extends JavaPlugin {
         // otherwise, check if the item was created by protection stones (stored in persistent data)
         if (item.getItemMeta() != null) {
             PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
-            
             try { // check if tag byte is 1
                 Byte isPSBlock = dataContainer.get(PS_BLOCK_KEY, PersistentDataType.BYTE);
                 tag = isPSBlock != null && isPSBlock == 1;
@@ -559,10 +558,8 @@ public class ProtectionStones extends JavaPlugin {
         Config.setInsertionOrderPreserved(true); // make sure that config upgrades aren't a complete mess
 
         plugin = this;
-        
         // Initialize the NamespacedKey for protection stones items
         PS_BLOCK_KEY = new NamespacedKey(this, "isPSBlock");
-        
         configLocation = new File(this.getDataFolder() + "/config.toml");
         blockDataFolder = new File(this.getDataFolder() + "/blocks");
 
