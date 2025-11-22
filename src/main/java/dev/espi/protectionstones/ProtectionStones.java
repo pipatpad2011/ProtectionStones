@@ -61,6 +61,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ProtectionStones extends JavaPlugin {
     // change this when the config version goes up
     public static final int CONFIG_VERSION = 16;
+    
+    // NamespacedKey for identifying protection stones items
+    private static NamespacedKey PS_BLOCK_KEY;
 
     private boolean debug = false;
 
@@ -422,14 +425,13 @@ public class ProtectionStones extends JavaPlugin {
         // otherwise, check if the item was created by protection stones (stored in persistent data)
         if (item.getItemMeta() != null) {
             PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
-            NamespacedKey key = new NamespacedKey(ProtectionStones.getInstance(), "isPSBlock");
             
             try { // check if tag byte is 1
-                Byte isPSBlock = dataContainer.get(key, PersistentDataType.BYTE);
+                Byte isPSBlock = dataContainer.get(PS_BLOCK_KEY, PersistentDataType.BYTE);
                 tag = isPSBlock != null && isPSBlock == 1;
             } catch (IllegalArgumentException es) {
                 try { // some nbt data may be using a string (legacy nbt from ps version 2.0.0 -> 2.0.6)
-                    String isPSBlock = dataContainer.get(key, PersistentDataType.STRING);
+                    String isPSBlock = dataContainer.get(PS_BLOCK_KEY, PersistentDataType.STRING);
                     tag = isPSBlock != null && isPSBlock.equals("true");
                 } catch (IllegalArgumentException ignored) {
                 }
@@ -497,7 +499,7 @@ public class ProtectionStones extends JavaPlugin {
         }
 
         // add identifier for protection stone created items
-        im.getPersistentDataContainer().set(new NamespacedKey(plugin, "isPSBlock"), PersistentDataType.BYTE, (byte) 1);
+        im.getPersistentDataContainer().set(PS_BLOCK_KEY, PersistentDataType.BYTE, (byte) 1);
 
         is.setItemMeta(im);
 
@@ -557,6 +559,10 @@ public class ProtectionStones extends JavaPlugin {
         Config.setInsertionOrderPreserved(true); // make sure that config upgrades aren't a complete mess
 
         plugin = this;
+        
+        // Initialize the NamespacedKey for protection stones items
+        PS_BLOCK_KEY = new NamespacedKey(this, "isPSBlock");
+        
         configLocation = new File(this.getDataFolder() + "/config.toml");
         blockDataFolder = new File(this.getDataFolder() + "/blocks");
 
