@@ -39,8 +39,8 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
-import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.luckperms.api.LuckPerms;
@@ -61,6 +61,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ProtectionStones extends JavaPlugin {
     // change this when the config version goes up
     public static final int CONFIG_VERSION = 16;
+    
+    // NamespacedKey for identifying protection stones items
+    private static NamespacedKey PS_BLOCK_KEY;
 
     private boolean debug = false;
 
@@ -402,8 +405,8 @@ public class ProtectionStones extends JavaPlugin {
 
     /**
      * Check if an item is a valid protection block, and if checkNBT is true, check if it was created by
-     * ProtectionStones. Be aware that blocks may have restrict-obtaining off, meaning that it is ignored whether or not
-     * the item is created by ProtectionStones (in this case have checkNBT false).
+     * ProtectionStones using persistent data container. Be aware that blocks may have restrict-obtaining off, 
+     * meaning that it is ignored whether or not the item is created by ProtectionStones (in this case have checkNBT false).
      *
      * @param item     the item to check
      * @param checkNBT whether or not to check if the plugin signed off on the item (restrict-obtaining)
@@ -419,27 +422,27 @@ public class ProtectionStones extends JavaPlugin {
 
         boolean tag = false;
 
-        // otherwise, check if the item was created by protection stones (stored in custom tag)
+        // otherwise, check if the item was created by protection stones (stored in persistent data)
         if (item.getItemMeta() != null) {
-            CustomItemTagContainer tagContainer = item.getItemMeta().getCustomTagContainer();
+            PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
             try { // check if tag byte is 1
-                Byte isPSBlock = tagContainer.getCustomTag(new NamespacedKey(ProtectionStones.getInstance(), "isPSBlock"), ItemTagType.BYTE);
+                Byte isPSBlock = dataContainer.get(PS_BLOCK_KEY, PersistentDataType.BYTE);
                 tag = isPSBlock != null && isPSBlock == 1;
             } catch (IllegalArgumentException es) {
                 try { // some nbt data may be using a string (legacy nbt from ps version 2.0.0 -> 2.0.6)
-                    String isPSBlock = tagContainer.getCustomTag(new NamespacedKey(ProtectionStones.getInstance(), "isPSBlock"), ItemTagType.STRING);
+                    String isPSBlock = dataContainer.get(PS_BLOCK_KEY, PersistentDataType.STRING);
                     tag = isPSBlock != null && isPSBlock.equals("true");
                 } catch (IllegalArgumentException ignored) {
                 }
             }
         }
 
-        return tag; // whether or not the nbt tag was found
+        return tag; // whether or not the persistent data was found
     }
 
     /**
      * Check if an item is a valid protection block, and if the block type has restrict-obtaining on, check if it was
-     * created by ProtectionStones (custom NBT tag). Be aware that blocks may have restrict-obtaining
+     * created by ProtectionStones (using persistent data container). Be aware that blocks may have restrict-obtaining
      * off, meaning that it ignores whether or not the item is created by ProtectionStones.
      *
      * @param item     the item to check
@@ -495,7 +498,7 @@ public class ProtectionStones extends JavaPlugin {
         }
 
         // add identifier for protection stone created items
-        im.getCustomTagContainer().setCustomTag(new NamespacedKey(plugin, "isPSBlock"), ItemTagType.BYTE, (byte) 1);
+        im.getPersistentDataContainer().set(PS_BLOCK_KEY, PersistentDataType.BYTE, (byte) 1);
 
         is.setItemMeta(im);
 
@@ -555,6 +558,8 @@ public class ProtectionStones extends JavaPlugin {
         Config.setInsertionOrderPreserved(true); // make sure that config upgrades aren't a complete mess
 
         plugin = this;
+        // Initialize the NamespacedKey for protection stones items
+        PS_BLOCK_KEY = new NamespacedKey(this, "isPSBlock");
         configLocation = new File(this.getDataFolder() + "/config.toml");
         blockDataFolder = new File(this.getDataFolder() + "/blocks");
 
